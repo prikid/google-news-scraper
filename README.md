@@ -1,4 +1,4 @@
-# 📰 Google News Scraper
+# 📰 Google News Scraper (modified)
 
 A lightweight package that scrapes article data from [Google News](https://news.google.com). Simply pass a keyword or phrase, and the results are returned as an array of JSON objects.
 
