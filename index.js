@@ -5,9 +5,10 @@ const cheerio = require('cheerio');
 
 const ArticleContent = require("./getArticleContent");
 const logger = require("./logger");
+const results = require("jsdom/lib/jsdom/living/traversal/helpers");
+const {config} = require("winston");
 const getTitle = require('./getTitle').default;
 const getArticleType = require('./getArticleType').default;
-const getPrettyUrl = require('./getPrettyUrl').default;
 const buildQueryString = require('./buildQueryString').default;
 
 
@@ -18,7 +19,8 @@ const googleNewsScraper = async (userConfig) => {
         puppeteerArgs: [],
         puppeteerHeadlessMode: true,
         logLevel: 'error',
-        proxies: null
+        filterCallback: null,
+        articleReadyCallback: null
     }, userConfig);
 
 
@@ -59,11 +61,13 @@ const googleNewsScraper = async (userConfig) => {
         headers['Referer'] = 'https://www.google.com/'
         request.continue({headers})
     })
+
     await page.setCookie({
         name: "CONSENT",
         value: `YES+cb.${new Date().toISOString().split('T')[0].replace(/-/g, '')}-04-p0.en-GB+FX+667`,
         domain: ".google.com"
     });
+
     await page.goto(url, {waitUntil: 'networkidle2'});
 
     try {
@@ -105,17 +109,21 @@ const googleNewsScraper = async (userConfig) => {
         i++
     });
 
-    if (config.prettyURLs) {
-        results = await Promise.all(results.map(article => {
-            const url = getPrettyUrl(article.link, logger);
-            article.link = url;
-            return article;
-        }));
+    if (config.filterCallback) {
+        if (config.filterCallback.constructor.name === 'AsyncFunction') {
+            const asyncFilter = async (arr, predicate) => Promise.all(arr.map(predicate))
+                .then((results) => arr.filter((_v, index) => results[index]));
+
+            results = await asyncFilter(results, config.filterCallback);
+        } else {
+            results = results.filter(config.filterCallback);
+        }
     }
 
-    if (config.getArticleContent) {
-        const filterWords = config.filterWords || [];
-        results = await (new ArticleContent(filterWords, config.proxies)).getContent(results.slice(0, 1));
+    if (config.prettyURLs || config.getArticleContent) {
+        const articleExtractor = new ArticleContent(config.getArticleContent, config.filterWords, browser, config.articleReadyCallback);
+
+        results = await articleExtractor.getContent(results);
     }
 
     await page.close();
@@ -125,40 +133,25 @@ const googleNewsScraper = async (userConfig) => {
 
 }
 
-// for debug
-// URL containing the list of proxies
-const proxyListURL = 'https://raw.githubusercontent.com/TheSpeedX/SOCKS-List/master/http.txt';
-// const proxyListURL = 'https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt';
-// const proxyListURL = 'https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies.txt';
-
-async function getProxies() {
-    // const response = await fetch(proxyListURL);
-    // const text = await response.text();
-
-    const text = "46.49.81.13:8080\n"
-
-
-    return text.trim().split('\n').map(line => line.trim());
+/*const filterCallback = (item) => {
+    return item.title.includes('lottery tickets yield two separate $10 million');
 }
 
-getProxies().then(proxies => {
-    if (proxies.length === 0)
-        this.logger.warn('No proxies found');
-
-    googleNewsScraper({
-        searchTerm: "Lottery",
-        // prettyURLs: false,
-        getArticleContent: true,
-        // puppeteerArgs: [
-        //   '--no-sandbox',
-        //   '--disable-setuid-sandbox',
-        // ],
-        logLevel: 'error',
-        proxies: proxies
-    }).then(articles => {
-        logger.info("Done", articles);
-    });
-});
+// for debug
+googleNewsScraper({
+    searchTerm: "Lottery",
+    prettyURLs: true,
+    getArticleContent: true,
+    puppeteerHeadlessMode: true,
+    // puppeteerArgs: [
+    //     '--no-sandbox',
+    //     '--disable-setuid-sandbox',
+    // ],
+    logLevel: 'error',
+    filterCallback: filterCallback,
+}).then(articles => {
+    logger.info("Done"));
+});*/
 
 
 module.exports = googleNewsScraper;

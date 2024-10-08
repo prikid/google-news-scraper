@@ -31,7 +31,8 @@
     "p-limit": "^6.1.0",
     "pino": "^9.4.0",
     "pino-pretty": "^11.2.2",
-    "puppeteer": "^22.11.2"
+    "puppeteer": "^22.11.2",
+    "winston": "^3.15.0"
   },
   "devDependencies": {
     "@babel/core": "^7.23.9",
