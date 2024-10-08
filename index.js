@@ -5,8 +5,6 @@ const cheerio = require('cheerio');
 
 const ArticleContent = require("./getArticleContent");
 const logger = require("./logger");
-const results = require("jsdom/lib/jsdom/living/traversal/helpers");
-const {config} = require("winston");
 const getTitle = require('./getTitle').default;
 const getArticleType = require('./getArticleType').default;
 const buildQueryString = require('./buildQueryString').default;

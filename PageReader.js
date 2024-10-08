@@ -71,7 +71,7 @@ class PageReader {
 
         try {
             // Make POST request to Splash to execute Lua script
-            const response = await axios.post(splashEndpoint, {
+            await axios.post(splashEndpoint, {
                 lua_source: luaScript,
                 url: this.url,
             }, {headers: {'Content-Type': 'application/json'}});
