@@ -50,7 +50,7 @@ class PageReader {
             }
 
         } catch (error) {
-            logger.error("Error fetching page content:", error);
+            logger.error(`Error fetching page content ${this.url}: `, error);
             this.success = false;
         } finally {
             // if (page)
