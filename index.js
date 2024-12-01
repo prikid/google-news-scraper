@@ -97,6 +97,7 @@ const googleNewsScraper = async (userConfig) => {
         const mainArticle = {
             title,
             "link": link,
+            "google_link": link,
             "image": image?.startsWith("/") ? `https://news.google.com${image}` : image,
             "source": $(this).find('div[data-n-tid]').text() || false,
             "datetime": new Date($(this).find('div:last-child time').attr('datetime')) || false,
