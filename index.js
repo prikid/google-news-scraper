@@ -120,7 +120,7 @@ const googleNewsScraper = async (userConfig) => {
     }
 
     if (config.prettyURLs || config.getArticleContent) {
-        const articleExtractor = new ArticleContent(config.getArticleContent, config.filterWords, browser, config.articleReadyCallback);
+        const articleExtractor = new ArticleContent(config.getArticleContent, config.filterWords, browser, config.articleReadyCallback, config.getArticleContent);
 
         results = await articleExtractor.getContent(results);
     }

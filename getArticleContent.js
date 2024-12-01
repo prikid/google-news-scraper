@@ -20,12 +20,14 @@ class ArticleContent {
         "i'm not a robot",
         "recaptcha"
     ];
+    getArticleContent;
 
 
-    constructor(extractContent = false, filterWords = [], browser = null, articleReadyCallback = null) {
+    constructor(extractContent = false, filterWords = [], browser = null, articleReadyCallback = null, getArticleContent = false) {
         this.extractContent = extractContent;
         this.browser = browser;
         this.articleReadyCallback = articleReadyCallback;
+        this.getArticleContent = getArticleContent;
         this.filterWords = filterWords || [];
         this.logger = logger;
     }
@@ -81,7 +83,7 @@ class ArticleContent {
     async _extractArticle(article) {
         const modifiedArticle = {...article};
 
-        const reader = new PageReader(modifiedArticle.link, false);
+        const reader = new PageReader(modifiedArticle.link, this.getArticleContent);
         await reader.readPage(this.browser);
 
         if (reader.too_many_requests)
